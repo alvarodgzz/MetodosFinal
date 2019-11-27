@@ -51,7 +51,7 @@ endfunction*/
 
 /// Linear
 funcprot(0);
-function [yfit,m,c] = lfitplot(x,y)
+function [yfit,m,c] = lfitplot(x,y,Evx)
     n=size(x);
     if n(2)>n(1) then
         n=n(2)
@@ -77,11 +77,32 @@ function [yfit,m,c] = lfitplot(x,y)
     y=matrix(y,n,1);
     yfit=matrix(yfit,n,1);
     clf();
+    /*
+    // Aquí se saca la R^2 lineal
+    sse = 0
+    for i =1 : length(y)
+        sse = sse + (y(i) - ((10.9) + (1.1 * x(i))))^2
+    end
+    // Obtenemos promedio para poder resolver sst después
+    sst = 0
+    suma = 0
+    for i = 1 : length(y)
+        suma = suma + y(i)
+    end
+    promedio = suma/length(y)
+    for i = 1 : length(x)
+        sst = sst + ((i) - promedio)^2
+    end
+    rcuadrada = (sst - sse) / sst
+    */
+    //disp("El valor de R^2 lineal es: "+ string(rcuadrada))
     //plot2d(x,[y ,yfit],[-9,5],leg='Original Data-Points@Fitted Line');
     mstr=string(m);
     cstr=string(c);
-    titleeq='Equation of the fitted line: '+mstr+'x + '+cstr;
-    xtitle(titleeq);
+    dLineal = c + (m * Evx);
+    disp('- Lineal     :   y = '+ '('+cstr+')'+' + '+'('+mstr+ ')'+' * x')
+    disp('- Valor Estimado : ' + string(dLineal))
+    //xtitle(titleeq);
     xlabel('x-->');
 endfunction
 
@@ -120,7 +141,7 @@ function A = npolyfit(x,y,n)
 endfunction
 // Cuadratic
 funcprot(0);
-function [A,y2fit] = pfitplot(x,y,n)
+function [A,y2fit] = pfitplot(x,y,n, Evx)
     format(6);
     N=size(x);
     if N(2)>N(1) then
@@ -160,24 +181,28 @@ function [A,y2fit] = pfitplot(x,y,n)
     clf();
 
     titleeq='';
-    for i=0:n
+    dCuadratica = 0;
+    for i= 0:n
         istr=string(i);
         Astr=string(A(i+1));
         if i==0 then
-            titleeq='('+Astr+')'+'x^'+istr
+            titleeq ='('+Astr+')'
+            dCuadratica = dCuadratica + A(i+1)
         else
-            titleeq='('+Astr+')'+'x^'+istr+'+'+titleeq;
+            titleeq='('+Astr+')'+' x^'+istr+' + '+titleeq;
+            dCuadratica = dCuadratica + A(i+1) * Evx^i
         end
     end
-    titleeq='Equation of the fitted poynomial: '+titleeq;
-    xtitle(titleeq);
+    disp('- Cuadrático :   y = '+titleeq)
+    disp('- Valor Estimado : ' + string(dCuadratica))
+    //xtitle(titleeq);
     xlabel('x-->');
 endfunction
 //Exponential Fitting
 //To exponentially fit a given set of data-points.
 //Written By: Manas Sharma(www.bragitoff.com)
 funcprot(0);
-function [f,a,c]=expofit(x,y)
+function [f,a,c] = expofit(x,y)
     n=size(x+1);
     if n(2)>n(1) then
         n=n(2)
@@ -206,7 +231,7 @@ function [f,a,c]=expofit(x,y)
 endfunction
 //To plot the fitted equation and the observed data-points and display the equation
 funcprot(0);
-function [y3fit,a,c]=efitplot(x,y)
+function [y3fit,a,c] = efitplot(x,y,Evx)
     n=size(x);
     if n(2)>n(1) then
         n=n(2)
@@ -234,13 +259,15 @@ function [y3fit,a,c]=efitplot(x,y)
     end
     x=matrix(x,n,1)
     y=matrix(y,n,1);
-    y3fit=matrix(yfit,n,1);
+    y3fit=matrix(y3fit,n,1);
     clf();
     //plot2d(x,[y,y3fit],[-9,5],leg='Original Data-Points@Fitted Line');
     astr=string(a);
     cstr=string(c);
-    //titleeq='Equation of the fitted line: '+cstr+'e^'+'('+astr+'x)';
-    xtitle(titleeq);
+    disp('- Exponencial:   y = '+ '('+cstr+') * '+ 'e^' + '('+astr+')'+ ' * x')
+    dExponencial = (c * ((2.718)^(a * Evx)))
+    disp('- Valor Estimado : ' + string(dExponencial))
+    //xtitle(titleeq);
     xlabel('x-->');
 endfunction
 
@@ -249,15 +276,18 @@ datos = leerDatos()
 tabla = imprimirDatos(datos)
 x = createArrX(tabla)
 y = createArrY(tabla)
+Evx = input('Para que valor desea estimar? x = ')
+disp("I) Modelos: ")
+[yfit,m,c] = lfitplot(x,y,Evx)
 equation = npolyfit(x,y,2)
-[equation , y2fit] = pfitplot(x,y,2)
-[yfit,m,c] = lfitplot(x,y)
-[y3fit,a,c]=efitplot(x,y)
+[equation , y2fit] = pfitplot(x,y,2,Evx)
+[y3fit,a,c] = efitplot(x,y,Evx)
+disp("II) Conclusiones: ")
 plot2d(x,[y ,yfit],[-9,5],leg='Original Data-Points@Fitted Line');  /// lineal
 plot2d(x,[y,y2fit],[-9,6],leg='Original Data-Points@Fitted Line'); /// cuadratico
-plot2d(x,[y,y3fit],[-9,4],leg='Original Data-Points@Fitted Line'); /// cuadratico
+plot2d(x,[y,y3fit],[-9,4],leg='Original Data-Points@Fitted Line'); /// exponencial
 //plot2d(x,y,-size(x))  //dotted points for the original/observed data-points
 //plot2d(x,y, size(x)) //red line for the fitted points
-disp(size(tabla, 1))
-disp(x)
-disp(y)
+//disp(size(tabla, 1))
+//disp(x)
+//disp(y)
