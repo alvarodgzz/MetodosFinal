@@ -7,8 +7,8 @@ clear
 // resultantes y analiza cuáles datos son los más alejados del emjro ajuste.
 // Melba Geraldine Consuelos Fernández    
 // A01410921
-// Alvaro Rodríguez
-// A0
+// Álvaro Alejandro Rodríguez González
+// A00822297
 // 27/11/2019 versión 1.0
 ////////////////////////////////////////////////////
 global r2L
@@ -43,7 +43,7 @@ endfunction
 /// Linear
 //Aquí sacamos los valores de la ecuación de la regresión lineal, para después graficarla con las nuevas variables 'y' sacadas del ajuste 
 funcprot(0);
-function [yfit,m,c] = lfitplot(x,y,Evx,media, tabla)
+function [yfit,m,c] = regLineal(x,y,Evx,media, tabla)
     n=size(x);
     if n(2)>n(1) then
         n=n(2)
@@ -61,20 +61,18 @@ function [yfit,m,c] = lfitplot(x,y,Evx,media, tabla)
         x2sum=x(i)*x(i)+x2sum;
         xysum=x(i)*y(i)+xysum;
     end
-    m =(n*xysum-xsum*ysum)/(n*x2sum-xsum*xsum);
-    c =(x2sum*ysum-xsum*xysum)/(x2sum*n-xsum*xsum);
-    for i=1:n
-        yfit(i)=m*x(i)+c;
-        
+    m =(n*xysum-xsum*ysum)/(n*x2sum-xsum*xsum);     // Se calcula el valor de a0
+    c =(x2sum*ysum-xsum*xysum)/(x2sum*n-xsum*xsum); // Se calcula el valor de a1
+    for i=1:n                                       
+        yfit(i)=m*x(i)+c;       // Se obtienen los valores para la ecuacion acotada
     end
     x = matrix(x,n,1)
     y = matrix(y,n,1);
-    yfit= matrix(yfit,n,1);
+    yfit= matrix(yfit,n,1); /// valor de y sobre la funcion
     clf();
     mstr=string(m);
     cstr=string(c);
-    dLineal = c + (m * Evx);
-    
+    dLineal = c + (m * Evx);  /// valor estimado con la x del usuario
     sst = 0
     for i = 1 : size(tabla,1)
          sst = sst + (tabla(i,2) - media)^2
@@ -84,19 +82,18 @@ function [yfit,m,c] = lfitplot(x,y,Evx,media, tabla)
     for i = 1 : size(tabla,1)
          ssr = ssr + (y(i,1) - (c + (m * x(i,1))))^2
     end
-    r2 = (sst - ssr)/ sst
+    r2 = (sst - ssr)/ sst                           /// se obtiene r2
     global r2L
     r2L = r2
     disp('- Lineal     :   y = '+ '('+cstr+')'+' + '+'('+mstr+ ')'+' * x , ' + string(r2))
     disp('- Valor Estimado : ' + string(dLineal))
-    //xtitle(titleeq);
     xlabel('x-->');
 endfunction
 
 //Regresión Cuadrática
 //En esta función, sacamos el valor de la regresión cuadrática para los puntos dados, regresando los coeficientes de la nueva equación.
 funcprot(0);
-function A = npolyfit(x,y,n)
+function A = regCuadratica(x,y,n)
     format(6);
     N=size(x);
     if N(2)>N(1) then
@@ -128,7 +125,7 @@ endfunction
 
 // En esta segunda función para la regresión cuadrática, usamos los valores calculados en la función de regresión para calcular sus valores de 'Y' ajustada con los valores en X
 funcprot(0);
-function [A,y2fit] = pfitplot(x,y,n, Evx)
+function [A,y2fit] = Cuadratica(x,y,n, Evx)
     format(6);
     N=size(x);
     if N(2)>N(1) then
@@ -193,10 +190,10 @@ function [A,y2fit] = pfitplot(x,y,n, Evx)
     r2C = r2
     disp('- Cuadrático :   y = '+titleeq+ ', r^2 =  '+ string(r2))
     disp('- Valor Estimado : ' + string(dCuadratica))
-    //xtitle(titleeq);
     xlabel('x-->');
 endfunction
 
+// Funcion que evalua as x(i) en la funcion cuadratica
 function evaluado = cuad(A, valX)
     dCuadratica = 0
     for i= 0:2
@@ -208,10 +205,11 @@ function evaluado = cuad(A, valX)
     end
     evaluado = dCuadratica
 endfunction
+
 /// Exponencial
 //Esta segunda funcion de regresión exponencial ayuda a relacionar los puntos X con las Y ajustadas para poder graficarla.
 funcprot(0);
-function [y3fit,a,c] = efitplot(x,y,Evx, tabla)
+function [y3fit,a,c] = regExponencial(x,y,Evx, tabla)
     n=size(x);
     if n(2)>n(1) then
         n=n(2)
@@ -241,16 +239,17 @@ function [y3fit,a,c] = efitplot(x,y,Evx, tabla)
     y=matrix(y,n,1);
     y3fit=matrix(y3fit,n,1);
     clf();
-    //plot2d(x,[y,y3fit],[-9,5],leg='Original Data-Points@Fitted Line');
     astr=string(a);
     cstr=string(c);
     dExponencial = (c * ((%e)^(a * Evx)))
+    /// Se obtiene la media exponencial
     lnMean = 0
     suma = 0
     for i = 1 : size(tabla, 1)
         suma = suma + log(tabla(i, 2))
     end
     lnMean = suma / size(tabla, 1)
+    /// Aqui se obtiene la r2
     sst = 0
     for i = 1 : size(tabla,1)
          sst = sst + (log(tabla(i,2)) - lnMean)^2
@@ -265,14 +264,13 @@ function [y3fit,a,c] = efitplot(x,y,Evx, tabla)
     r2E = r2
     disp('- Exponencial:   y = '+ '('+cstr+') * '+ 'e^' + '('+astr+')'+ ' * x, r^2 = ' + string(r2))
     disp('- Valor Estimado : ' + string(dExponencial))
-    //xtitle(titleeq);
     xlabel('x-->');
 endfunction
 
 //Potencia
 //Esta segunda funcion de regresión exponencial ayuda a relacionar los puntos X con las Y ajustadas para poder graficarla.
 funcprot(0);
-function [y4fit,a,c] = pofitplot(x,y,Evx)
+function [y4fit,a,c] = regPotencial(x,y,Evx)
     n=size(x);
     if n(2)>n(1) then
         n=n(2)
@@ -308,16 +306,17 @@ function [y4fit,a,c] = pofitplot(x,y,Evx)
     y=matrix(y,n,1);
     y4fit=matrix(y4fit,n,1);
     clf();
-    //plot2d(x,[y,y3fit],[-9,5],leg='Original Data-Points@Fitted Line');
     astr=string(a);
     cstr=string(c);
     dPotencial = (c*Evx^a)
+    /// media potencial
     lnMean = 0
     suma = 0
     for i = 1 : size(tabla, 1)
         suma = suma + log(tabla(i, 2))
     end
     lnMean = suma / size(tabla, 1)
+    // Aqui se obtiene la r2
     sst = 0
     for i = 1 : size(tabla,1)
          sst = sst + (log(tabla(i,2)) - lnMean)^2
@@ -332,10 +331,9 @@ function [y4fit,a,c] = pofitplot(x,y,Evx)
     r2P = r2
     disp('- Potencial:   y = ('+cstr+') * '+ 'x^('+astr+'), r^2 = ' + string(r2))
     disp('- Valor Estimado : ' + string(dPotencial))
-    //xtitle(titleeq);
     xlabel('x-->');
 endfunction
-
+// Funcion para obtener media 
 function media = getMedia(y, tabla)
     suma = 0
     for i = 1 : size(tabla, 1)
@@ -344,20 +342,7 @@ function media = getMedia(y, tabla)
     media = suma / size(tabla, 1)
 endfunction
 
-function sst = getSST(tabla, media, flag)
-    if  (flag == 0)
-        sst = 0
-        for i = 1 : size(tabla, 1)
-            sst = sst + (tabla(i,2) - media)^2
-        end
-    else
-        sst = 0
-        for i = 1 : size(tabla, 1)
-            sst = sst + (log(tabla(i,2)) - media)^2
-        end
-    end
-endfunction
-
+///  Funcion para comparar regresiones
 function [mejorR, reg] = getMejorR()
     rBuena = r2L
     reg = 'Lineal'
@@ -375,6 +360,7 @@ function [mejorR, reg] = getMejorR()
     end
     mejorR = rBuena
 endfunction
+
 /// main program
 datos = leerDatos()
 tabla = imprimirDatos(datos)
@@ -383,27 +369,17 @@ y = createArrY(tabla)
 Evx = input('Para que valor desea estimar? x = ')
 disp("I) Modelos: ")
 media = getMedia(y, tabla)
-[yfit,m,c] = lfitplot(x,y,Evx, media,tabla)    ///lineal
-equation = npolyfit(x,y,2)
-[equation , y2fit] = pfitplot(x,y,2,Evx)
-[y3fit,a,c] = efitplot(x,y,Evx)
-[y4fit,a,c] = pofitplot(x,y,Evx)
+[yfit,m,c] = regLineal(x,y,Evx, media,tabla)    ///lineal
+equation = regCuadratica(x,y,2)
+[equation , y2fit] = Cuadratica(x,y,2,Evx)  /// cuadratica
+[y3fit,a,c] = regExponencial(x,y,Evx)           /// exponencial
+[y4fit,a,c] = regPotencial(x,y,Evx)          /// potencial
 disp("II) Conclusiones: ")
-[rFinal, regresion] = getMejorR()
+[rFinal, regresion] = getMejorR()  // Obtenemos mejor r2
 disp('La mejor regresion es ' + regresion + ' : ' + string(rFinal))
-/*
-sstL = (media, tabla, 0)
-sstC = (media, tabla, 0)
-sstE = (media, tabla, 1)
-sstP = (media, tabla, 1)
-*/
-//disp(media)
+/// Graficas de las regresiones
 plot2d(x,[y ,yfit],[-9,5],leg='Original Data-Points@Fitted Line');  /// lineal
 plot2d(x,[y,y2fit],[-9,6],leg='Original Data-Points@Fitted Line'); /// cuadratico
 plot2d(x,[y,y3fit],[-9,4],leg='Original Data-Points@Fitted Line'); /// exponencial
 plot2d(x,[y,y4fit],[-9,3],leg='Original Data-Points@Fitted Line'); /// potencial
-//plot2d(x,y,-size(x))  //dotted points for the original/observed data-points
-//plot2d(x,y, size(x)) //red line for the fitted points
-//disp(size(tabla, 1))
-//disp(x)
-//disp(y)
+
