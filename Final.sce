@@ -1,7 +1,7 @@
 clear
 
 ////////////////////////////////////////////////////
-//  Final.sce
+// Final.sce
 // Este programa calcula las ecuaciones de el resultado de un ajuste lineal, cuadrático, exponencial y potencial de un set de datos X y Y
 // También, calcula el coeficiente r^2 para determinar la regresión más acertada, evalúa en un valor a aproximar, grafica las ecuaciones 
 // resultantes y analiza cuáles datos son los más alejados del emjro ajuste.
@@ -35,8 +35,12 @@ function array = createArrY(tabla)
 endfunction
 
 
+//r^2
+
+
+
 /// Linear
-//Aquí sacamos los valores de la ecuación de la regresión lineal, para desoués graficarla con las nuevas variables 'y' sacadas del ajuste 
+//Aquí sacamos los valores de la ecuación de la regresión lineal, para después graficarla con las nuevas variables 'y' sacadas del ajuste 
 funcprot(0);
 function [yfit,m,c] = lfitplot(x,y,Evx)
     n=size(x);
@@ -49,6 +53,7 @@ function [yfit,m,c] = lfitplot(x,y,Evx)
     ysum=0;
     xysum=0;
     x2sum=0;
+    yminusfit=0;
     for i=1:n
         xsum=x(i)+xsum;
         ysum=y(i)+ysum;
@@ -59,6 +64,7 @@ function [yfit,m,c] = lfitplot(x,y,Evx)
     c=(x2sum*ysum-xsum*xysum)/(x2sum*n-xsum*xsum);
     for i=1:n
         yfit(i)=m*x(i)+c;
+        
     end
     x=matrix(x,n,1)
     y=matrix(y,n,1);
@@ -256,6 +262,84 @@ function [y3fit,a,c] = efitplot(x,y,Evx)
     xlabel('x-->');
 endfunction
 
+//Potencia
+//Esta función calcula los valores ajustados de 'Y' en una ecuación exponencial y calcula sus coeficientes.
+funcprot(0);
+function [f,a,c] = potfit(x,y)
+    n=size(x+1);
+    if n(2)>n(1) then
+        n=n(2)
+    else
+        n=n(1);
+    end
+    for i=1:n
+        Yln(i)=log(y(i));
+        Xln(i)=log(x(i));
+    end
+    xsum=0;
+    ysum=0;
+    xysum=0;
+    x2sum=0;
+    for i=1:n
+        xsum=Xln(i)+xsum;
+        ysum=Yln(i)+ysum;
+        x2sum=(Xln(i))^2 +x2sum;
+        xysum=Xln(i)* Yln(i) + xysum;
+    end
+    a=(n*xysum-xsum*ysum)/(n*x2sum-xsum*xsum);
+    b=(x2sum*ysum-xsum*xysum)/(x2sum*n-xsum*xsum);
+    c=exp(b);
+    for i=1:n
+        f(i)=c*(x)^a;
+    end
+endfunction
+//Potencia
+//Esta segunda funcion de regresión exponencial ayuda a relacionar los puntos X con las Y ajustadas para poder graficarla.
+funcprot(0);
+function [y4fit,a,c] = pofitplot(x,y,Evx)
+    n=size(x);
+    if n(2)>n(1) then
+        n=n(2)
+    else
+        n=n(1);
+    end
+    for i=1:n
+        Yln(i)=log(y(i));
+    end
+    xsum=0;
+    ysum=0;
+    xysum=0;
+    x2sum=0;
+    for i=1:n
+        xsum=x(i)+xsum;
+        ysum=Yln(i)+ysum;
+        x2sum=x(i)*x(i)+x2sum;
+        xysum=x(i)*Yln(i)+xysum;
+    end
+    a=(n*xysum-xsum*ysum)/(n*x2sum-xsum*xsum);
+    b=(x2sum*ysum-xsum*xysum)/(x2sum*n-xsum*xsum);
+    c=exp(b);
+    for i=1:n
+        y4fit(i)=c*exp(a*x(i));
+    end
+    x=matrix(x,n,1)
+    y=matrix(y,n,1);
+    y4fit=matrix(y4fit,n,1);
+    clf();
+    //plot2d(x,[y,y3fit],[-9,5],leg='Original Data-Points@Fitted Line');
+    astr=string(a);
+    cstr=string(c);
+    disp('- Potencial:   y = ('+cstr+') * '+ 'x^('+astr+')')
+    dPotencial = (c*Evx^a)
+    disp('- Valor Estimado : ' + string(dPotencial))
+    //xtitle(titleeq);
+    xlabel('x-->');
+endfunction
+
+
+
+
+
 /// main program
 datos = leerDatos()
 tabla = imprimirDatos(datos)
@@ -267,10 +351,12 @@ disp("I) Modelos: ")
 equation = npolyfit(x,y,2)
 [equation , y2fit] = pfitplot(x,y,2,Evx)
 [y3fit,a,c] = efitplot(x,y,Evx)
+[y4fit,a,c] = pofitplot(x,y,Evx)
 disp("II) Conclusiones: ")
 plot2d(x,[y ,yfit],[-9,5],leg='Original Data-Points@Fitted Line');  /// lineal
 plot2d(x,[y,y2fit],[-9,6],leg='Original Data-Points@Fitted Line'); /// cuadratico
 plot2d(x,[y,y3fit],[-9,4],leg='Original Data-Points@Fitted Line'); /// exponencial
+plot2d(x,[y,y4fit],[-9,3],leg='Original Data-Points@Fitted Line'); /// potencial
 //plot2d(x,y,-size(x))  //dotted points for the original/observed data-points
 //plot2d(x,y, size(x)) //red line for the fitted points
 //disp(size(tabla, 1))
