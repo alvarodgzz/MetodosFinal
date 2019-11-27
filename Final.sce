@@ -26,12 +26,14 @@ plot(x, y, "red")
 plot(x, a*x+b)
 */
 
-//Quadratic Regression
+//Polynomial Fitting
+//To fit a given set of data points to an n-degree polynomial
+//Written By: Manas Sharma (www.bragitoff.com)
 funcprot(0);
 function A=npolyfit(x,y,n)
     format(6);
     N=size(x);
-    if N(2)>N(1) then
+    if N(2)>N(1) 
         N=N(2)
     else
         N=N(1);
@@ -58,6 +60,7 @@ function A=npolyfit(x,y,n)
     C=-C;
     disp(C);
     A=linsolve(B,C);
+endfunction
     
     /*x=[1,2,3,4,5];
 y=[1.6,7.5,24.6,66,130];
@@ -65,5 +68,5 @@ a=npolyfit(x,y,2)
 yfit=f(x);
 plot2d(x,y,-5)
 plot2d(x,yfit,5)*/
-endfunction
+
     
