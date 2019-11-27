@@ -85,7 +85,7 @@ function [yfit,m,c] = lfitplot(x,y)
     xlabel('x-->');
 endfunction
 
-//Polynomial Fitting
+//Quadratic Fitting
 //To fit a given set of data points to an n-degree polynomial
 //Written By: Manas Sharma (www.bragitoff.com)
 funcprot(0);
@@ -173,6 +173,76 @@ function [A,y2fit] = pfitplot(x,y,n)
     xtitle(titleeq);
     xlabel('x-->');
 endfunction
+//Exponential Fitting
+//To exponentially fit a given set of data-points.
+//Written By: Manas Sharma(www.bragitoff.com)
+funcprot(0);
+function [f,a,c]=expofit(x,y)
+    n=size(x+1);
+    if n(2)>n(1) then
+        n=n(2)
+    else
+        n=n(1);
+    end
+    for i=1:n
+        Yln(i)=log(y(i));
+    end
+    xsum=0;
+    ysum=0;
+    xysum=0;
+    x2sum=0;
+    for i=1:n
+        xsum=x(i)+xsum;
+        ysum=Yln(i)+ysum;
+        x2sum=x(i)*x(i)+x2sum;
+        xysum=x(i)*Yln(i)+xysum;
+    end
+    a=(n*xysum-xsum*ysum)/(n*x2sum-xsum*xsum);
+    b=(x2sum*ysum-xsum*xysum)/(x2sum*n-xsum*xsum);
+    c=exp(b);
+    for i=1:n
+        f(i)=c*exp(a*x(i));
+    end
+endfunction
+//To plot the fitted equation and the observed data-points and display the equation
+funcprot(0);
+function [y3fit,a,c]=efitplot(x,y)
+    n=size(x);
+    if n(2)>n(1) then
+        n=n(2)
+    else
+        n=n(1);
+    end
+    for i=1:n
+        Yln(i)=log(y(i));
+    end
+    xsum=0;
+    ysum=0;
+    xysum=0;
+    x2sum=0;
+    for i=1:n
+        xsum=x(i)+xsum;
+        ysum=Yln(i)+ysum;
+        x2sum=x(i)*x(i)+x2sum;
+        xysum=x(i)*Yln(i)+xysum;
+    end
+    a=(n*xysum-xsum*ysum)/(n*x2sum-xsum*xsum);
+    b=(x2sum*ysum-xsum*xysum)/(x2sum*n-xsum*xsum);
+    c=exp(b);
+    for i=1:n
+        y3fit(i)=c*exp(a*x(i));
+    end
+    x=matrix(x,n,1)
+    y=matrix(y,n,1);
+    y3fit=matrix(yfit,n,1);
+    clf();
+    //plot2d(x,[y,y3fit],[-9,5],leg='Original Data-Points@Fitted Line');
+    astr=string(a);
+    cstr=string(c);
+    //titleeq='Equation of the fitted line: '+cstr+'e^'+'('+astr+'x)';
+    xtitle(titleeq);
+    xlabel('x-->');
+endfunction
 
 /// main program
 datos = leerDatos()
@@ -182,8 +252,10 @@ y = createArrY(tabla)
 equation = npolyfit(x,y,2)
 [equation , y2fit] = pfitplot(x,y,2)
 [yfit,m,c] = lfitplot(x,y)
+[y3fit,a,c]=efitplot(x,y)
 plot2d(x,[y ,yfit],[-9,5],leg='Original Data-Points@Fitted Line');  /// lineal
 plot2d(x,[y,y2fit],[-9,6],leg='Original Data-Points@Fitted Line'); /// cuadratico
+plot2d(x,[y,y3fit],[-9,4],leg='Original Data-Points@Fitted Line'); /// cuadratico
 //plot2d(x,y,-size(x))  //dotted points for the original/observed data-points
 //plot2d(x,y, size(x)) //red line for the fitted points
 disp(size(tabla, 1))
